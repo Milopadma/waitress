@@ -1,17 +1,6 @@
-import {
-  ActionRowBuilder,
-  ApplicationCommandOptionType,
-  ButtonBuilder,
-  ButtonStyle,
-  CommandInteraction,
-} from "discord.js";
-import { ButtonComponent, Discord, Slash, SlashOption } from "discordx";
-import type {
-  ButtonInteraction,
-  GuildMember,
-  MessageActionRowComponentBuilder,
-  User,
-} from "discord.js";
+import { ApplicationCommandOptionType, CommandInteraction } from "discord.js";
+import { Discord, Slash, SlashOption } from "discordx";
+import type { GuildMember, User } from "discord.js";
 
 @Discord()
 export class Timer {
@@ -34,18 +23,6 @@ export class Timer {
     user: User | GuildMember | undefined,
     interaction: CommandInteraction
   ): Promise<void> {
-    //show the button
-    const userBtn = new ButtonBuilder()
-      .setLabel("User")
-      .setEmoji("👋")
-      .setStyle(ButtonStyle.Primary)
-      .setCustomId("user-btn");
-
-    const row =
-      new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
-        userBtn
-      );
-
     //reply for confirmation
     await interaction.reply(`Timer set for ${seconds} seconds`);
 
@@ -53,10 +30,5 @@ export class Timer {
     setTimeout(() => {
       interaction.followUp(`Timer done! ${user}`);
     }, seconds * 1000);
-  }
-
-  @ButtonComponent({ id: "user-btn" })
-  userBtn(interaction: ButtonInteraction): void {
-    interaction.reply(`👋 ${interaction.member}`);
   }
 }

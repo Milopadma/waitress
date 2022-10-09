@@ -79,7 +79,7 @@ async function run() {
   await server.build();
 
   // api: let's start the server now
-  const port = process.env.PORT ?? 3000;
+  const port = process.env.PORT ?? 3300;
   server.listen(port, () => {
     console.log(`discord api server started on ${port}`);
     console.log(`visit localhost:${port}/guilds`);

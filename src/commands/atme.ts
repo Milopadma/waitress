@@ -102,7 +102,7 @@ export class AtMe {
       await interaction.reply(
         `Now notifying you whenever ${
           user!.username
-        } join a voice channel, with '${condition}' to continous notifications.`
+        } joins a voice channel, with '${condition}' to continous notifications.`
       );
     }
   }

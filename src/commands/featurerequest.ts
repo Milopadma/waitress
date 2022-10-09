@@ -1,6 +1,5 @@
 import { ApplicationCommandOptionType, CommandInteraction } from "discord.js";
 import { Discord, Slash, SlashOption } from "discordx";
-import type { GuildMember, User } from "discord.js";
 
 @Discord()
 export class FeatureRequest {

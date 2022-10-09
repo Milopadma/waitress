@@ -19,37 +19,37 @@ export class AtMe {
     user: User | undefined,
     interaction: CommandInteraction
   ): Promise<void> {
-    //check if the userpair already exists
-    const userPairExists = atMeListenersPair.some(
-      (userPair) => userPair[0] === interaction.user && userPair[1] === user
-    );
-    //if the userpair doesn't exist, add it to the array
-    if (!userPairExists) {
-      console.log("adding userpair" + userPairExists);
+    //check if the user pair is already in the atMeListeners array
+    const userPair = atMeListenersPair.find((pair) => pair[0] === user);
+    if (userPair) {
+      //if it is, remove it
+      atMeListenersPair.splice(atMeListenersPair.indexOf(userPair), 1);
+      //reply for confirmation
+      await interaction.reply(`No longer notifying ${user}`);
+    }
+    {
+      //if it isn't, add it
       atMeListenersPair.push([interaction.user, user!]);
       //reply for confirmation
-      await interaction.reply(
-        `You will be notified when ${user} joins a voice channel`
-      );
-    } else {
-      //if the userpair already exists, reply with an error message
-      await interaction.reply(
-        `You are already being notified when ${user} joins a voice channel`
+      await interaction.reply(`Now notifying ${user}`);
+      //and add a listener for when the user joins the vc
+      user!.client.once(
+        "voiceStateUpdate",
+        (oldState, newState) => {
+          if (
+            oldState.channel === null &&
+            newState.channel !== null &&
+            newState.member!.id === user!.id
+          ) {
+            //if they did, ping the user
+            interaction.followUp(
+              `Hey ${interaction.user}, ${user!.username} just joined ${
+                newState.channel
+              }`
+            );
+          }
+        } //check if the user joined a vc
       );
     }
-
-    //create a new listener for the user pair, when the user joins a vc, the interaction user will be notified
-    interaction.client.on("voiceStateUpdate", (oldState, newState) => {
-      if (
-        newState.member?.user === user &&
-        newState.channel &&
-        !oldState.channel
-      ) {
-        console.log("user joined vc");
-        interaction.followUp(
-          `Hey ${interaction.user}, ${user} just joined ${newState.channel}`
-        );
-      }
-    });
   }
 }

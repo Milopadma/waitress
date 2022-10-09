@@ -31,10 +31,9 @@ export class AtMe {
       name: "continuous",
       description: "Want to be notified continously?",
       required: true,
-      type: ApplicationCommandOptionType.String,
+      type: ApplicationCommandOptionType.Boolean,
     })
-    condition: string,
-
+    condition: boolean,
     interaction: CommandInteraction
   ): Promise<void> {
     //check if the user pair is already in the tuple
@@ -59,7 +58,7 @@ export class AtMe {
       console.log("new pair" + atMeListenersPair);
       //and add a listener for when the user joins the vc
       //check if the user wants to be notified continously or once-only
-      if (condition === "yes") {
+      if (condition === true) {
         //if they want to be notified continously, add a listener for when the user joins the vc
         GuildMember.user!.client.on(
           "voiceStateUpdate",
@@ -101,7 +100,9 @@ export class AtMe {
 
       //reply for confirmation
       await interaction.reply(
-        `Now notifying you whenever they join a voice channel.`
+        `Now notifying you whenever ${
+          user!.username
+        } join a voice channel, with '${condition}' to continous notifications.`
       );
     }
   }

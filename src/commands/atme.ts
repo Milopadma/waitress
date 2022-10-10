@@ -70,7 +70,7 @@ export class AtMe {
             ) {
               //if they did, send a message to the channel to ping the user
               interaction.channel!.send(
-                `Hey ${interaction.user}, ${GuildMember.user} just joined a voice channel!`
+                `Hey ${interaction.user}, ${GuildMember.user.username} just joined ${newState.channel}!`
               );
             }
           }
@@ -86,11 +86,8 @@ export class AtMe {
               newState.member!.id === GuildMember.user!.id
             ) {
               //if they did, ping the user
-
               interaction.channel!.send(
-                `Hey ${interaction.user}, ${
-                  GuildMember.user!.username
-                } just joined ${newState.channel}`
+                `Hey ${interaction.user}, ${GuildMember.user.username} just joined ${newState.channel}!`
               );
             }
           }

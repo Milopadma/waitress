@@ -68,11 +68,9 @@ export class AtMe {
               newState.channel !== null &&
               newState.member!.id === GuildMember.user!.id
             ) {
-              //if they did, ping the user
-              interaction.followUp(
-                `Hey ${interaction.user}, ${
-                  GuildMember.user!.username
-                } just joined ${newState.channel}`
+              //if they did, send a message to the channel to ping the user
+              interaction.channel!.send(
+                `Hey ${interaction.user}, ${GuildMember.user.username} just joined ${newState.channel}!`
               );
             }
           }
@@ -88,10 +86,8 @@ export class AtMe {
               newState.member!.id === GuildMember.user!.id
             ) {
               //if they did, ping the user
-              interaction.followUp(
-                `Hey ${interaction.user}, ${
-                  GuildMember.user!.username
-                } just joined ${newState.channel}`
+              interaction.channel!.send(
+                `Hey ${interaction.user}, ${GuildMember.user.username} just joined ${newState.channel}!`
               );
             }
           }

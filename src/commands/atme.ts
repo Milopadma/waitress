@@ -26,15 +26,23 @@ export class AtMe {
   @On({ event: "voiceStateUpdate" })
   async onVoiceStateUpdate(states: VoiceState[]): Promise<void> {
     const userID = states[1].id;
+    const channelID = states[1].channelId;
     //iterate through the array to find userID, using
     for (let index = 0; index < atMeListenersPairArray.length; index++) {
       const notifier = atMeListenersPairArray[index][0][0].id;
-      const notified = atMeListenersPairArray[index][0][1].id;
+      const notifiedID = atMeListenersPairArray[index][0][1].id;
+      const notifiedName = atMeListenersPairArray[index][0][1].username;
 
-      if (userID === notified) {
+      if (userID === notifiedID) {
         const channel = atMeListenersPairArray[index][1];
         if (channel) {
-          await channel.send(`<@${notifier}> <@${notified}> joined vc`);
+          await channel.send(
+            `Hey <@${notifier}>, <@${notifiedName}> joined ${channelID}`
+          );
+        }
+        // if the condition is false, remove the user pair from the array
+        if (!atMeListenersPairArray[index][2]) {
+          atMeListenersPairArray.splice(index, 1);
         }
       }
     }

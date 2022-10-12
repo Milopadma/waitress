@@ -54,7 +54,8 @@ export class AtMe {
           }
         }
       }
-    } else { //then a user has just left a voice channel
+    } else {
+      //then a user has just left a voice channel
       return;
     }
   }
@@ -120,6 +121,46 @@ export class AtMe {
         `You will now be notified ${condition ? "continously" : "once"} when ${
           notifiedUser.username
         } joins a voice channel`
+      );
+    }
+  }
+  @Slash({ description: "remove a listener" })
+  @SlashGroup("atme")
+  async remove(
+    @SlashOption({
+      name: "user",
+      description:
+        "Who do you want to be notified for when they join a voice channel?",
+      required: true,
+      type: ApplicationCommandOptionType.User,
+    })
+    GuildMember: GuildMember,
+    interaction: CommandInteraction
+  ): Promise<void> {
+    const user = GuildMember.user;
+    //check if the user pair is already in the array
+    const notifierUser = interaction.user; //the one that sent the command [1]
+    const notifiedUser = GuildMember.user; //the one that was mentioned as a command parameter [2]
+    const userPairArray = atMeListenersPairArray.find(
+      (userPairArray) =>
+        userPairArray[0][0].id === notifierUser.id &&
+        userPairArray[0][1].id === notifiedUser.id
+    );
+
+    if (userPairArray) {
+      //if it is, remove it
+      atMeListenersPairArray.splice(
+        atMeListenersPairArray.indexOf(userPairArray),
+        1
+      );
+      //reply for confirmation
+      await interaction.reply(
+        `No longer notifying you whenever ${user!.username} joins.`
+      );
+    } else {
+      //if it isn't, reply for confirmation
+      await interaction.reply(
+        `You're not notifying yourself whenever ${user!.username} joins.`
       );
     }
   }
@@ -191,34 +232,3 @@ export class AtMe {
 //       );
 //     }
 //   }
-//   @Slash({ description: "remove a listener" })
-//   @SlashGroup("atme")
-//   async remove(
-//     @SlashOption({
-//       name: "user",
-//       description:
-//         "Who do you want to be notified for when they join a voice channel?",
-//       required: true,
-//       type: ApplicationCommandOptionType.User,
-//     })
-//     GuildMember: GuildMember,
-//     interaction: CommandInteraction
-//   ): Promise<void> {
-//     const user = GuildMember.user;
-//     //check if the user pair is already in the atMeListeners array
-//     const userPair = atMeListenersPair.find((pair) => pair[0] === user);
-//     if (userPair) {
-//       //if it is, remove it
-//       atMeListenersPair.splice(atMeListenersPair.indexOf(userPair), 1);
-//       //reply for confirmation
-//       await interaction.reply(
-//         `No longer notifying you whenever ${user!.username} joins.`
-//       );
-//     } else {
-//       //if it isn't, reply for confirmation
-//       await interaction.reply(
-//         `You're not notifying yourself whenever ${user!.username} joins.`
-//       );
-//     }
-//   }
-// }

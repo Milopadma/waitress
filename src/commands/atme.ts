@@ -1,7 +1,9 @@
 import {
   ApplicationCommandOptionType,
   CommandInteraction,
+  GuildBasedChannel,
   GuildMember,
+  TextBasedChannel,
   VoiceState,
 } from "discord.js";
 import { Discord, On, Slash, SlashGroup, SlashOption } from "discordx";
@@ -9,11 +11,11 @@ import type { User } from "discord.js";
 
 //define user pair, text channel and boolean
 type UserPair = [User, User]; // [notifier, notified]
-type TextChannel = string;
+type TextChannel = TextBasedChannel | null;
 type Boolean = boolean;
 
 //define array
-const atMeListenersPair: [UserPair, TextChannel, Boolean][] = [];
+const atMeListenersPairArray: [UserPair, TextChannel, Boolean][] = [];
 
 @Discord()
 @SlashGroup({
@@ -23,34 +25,21 @@ const atMeListenersPair: [UserPair, TextChannel, Boolean][] = [];
 export class AtMe {
   @On({ event: "voiceStateUpdate" })
   async onVoiceStateUpdate(states: VoiceState[]): Promise<void> {
-    const newState = states[1];
-    //check if the newstate.id is in the array
-    const userPairArray = atMeListenersPair.find(
-      (userPair) => userPair[0][0].id === newState.id
-    );
+    const userID = states[1].id;
+    //iterate through the array to find userID, using
+    for (let index = 0; index < atMeListenersPairArray.length; index++) {
+      const notifier = atMeListenersPairArray[index][0][0].id;
+      const notified = atMeListenersPairArray[index][0][1].id;
 
-    if (!userPairArray) return;
-    if (userPairArray[0][1].id === newState.id) {
-      //if the user pair is in the array
-      if (newState.channel) {
-        //if the user joined a voice channel
-        if (userPairArray[2]) {
-          //if the condition is true
-          await userPairArray[0][0].send(
-            `${userPairArray[0][1].username} joined a voice channel`
-          );
-        } else {
-          //if the condition is false
-          await userPairArray[0][0].send(
-            `${userPairArray[0][1].username} joined a voice channel`
-          );
-          //remove the user pair from the array
-          const index = atMeListenersPair.indexOf(userPairArray);
-          atMeListenersPair.splice(index, 1);
+      if (userID === notified) {
+        const channel = atMeListenersPairArray[index][1];
+        if (channel) {
+          await channel.send(`<@${notifier}> <@${notified}> joined vc`);
         }
       }
     }
   }
+
   @Slash({ description: "add a listener" })
   @SlashGroup("atme")
   async add(
@@ -76,7 +65,7 @@ export class AtMe {
     //check if the user pair is already in the array
     const notifierUser = interaction.user; //the one that sent the command [1]
     const notifiedUser = GuildMember.user; //the one that was mentioned as a command parameter [2]
-    const userPairArray = atMeListenersPair.find(
+    const userPairArray = atMeListenersPairArray.find(
       (userPairArray) =>
         userPairArray[0][0].id === notifierUser.id &&
         userPairArray[0][1].id === notifiedUser.id
@@ -102,8 +91,8 @@ export class AtMe {
     } else {
       //if the user pair is not in the array
       //get the text channel where the command interaction happened
-      const textChannel = interaction.channel!.id;
-      atMeListenersPair.push([
+      const textChannel = interaction.channel;
+      atMeListenersPairArray.push([
         [notifierUser, notifiedUser],
         textChannel,
         condition,

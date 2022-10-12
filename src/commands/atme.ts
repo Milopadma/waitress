@@ -25,26 +25,37 @@ const atMeListenersPairArray: [UserPair, TextChannel, Boolean][] = [];
 export class AtMe {
   @On({ event: "voiceStateUpdate" })
   async onVoiceStateUpdate(states: VoiceState[]): Promise<void> {
-    const userID = states[1].id;
-    const channelID = states[1].channelId;
-    //iterate through the array to find userID, using
-    for (let index = 0; index < atMeListenersPairArray.length; index++) {
-      const notifier = atMeListenersPairArray[index][0][0].id;
-      const notifiedID = atMeListenersPairArray[index][0][1].id;
-      const notifiedName = atMeListenersPairArray[index][0][1].username;
+    const newStateChannelID = states[1].channelId;
+    const oldStateChannelID = states[0].channelId;
 
-      if (userID === notifiedID) {
-        const channel = atMeListenersPairArray[index][1];
-        if (channel) {
-          await channel.send(
-            `Hey <@${notifier}>, <@${notifiedName}> joined ${channelID}`
-          );
-        }
-        // if the condition is false, remove the user pair from the array
-        if (!atMeListenersPairArray[index][2]) {
-          atMeListenersPairArray.splice(index, 1);
+    const userID = states[1].id;
+    const voiceChannel = states[1].channel;
+
+    console.log(states);
+
+    //if oldStateChannelID is null and newStateChannelID is not null, then continue
+    if (oldStateChannelID === null && newStateChannelID !== null) {
+      //iterate through the array to find userID, using
+      for (let index = 0; index < atMeListenersPairArray.length; index++) {
+        const notifier = atMeListenersPairArray[index][0][0].id;
+        const notifiedID = atMeListenersPairArray[index][0][1].id;
+        const notifiedName = atMeListenersPairArray[index][0][1].username;
+
+        if (userID === notifiedID) {
+          const textChannel = atMeListenersPairArray[index][1];
+          if (textChannel) {
+            await textChannel.send(
+              `Hey <@${notifier}>, <${notifiedName}> joined ${voiceChannel}`
+            );
+          }
+          // if the condition is false, remove the user pair from the array
+          if (!atMeListenersPairArray[index][2]) {
+            atMeListenersPairArray.splice(index, 1);
+          }
         }
       }
+    } else { //then a user has just left a voice channel
+      return;
     }
   }
 

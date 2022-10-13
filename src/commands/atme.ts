@@ -19,7 +19,7 @@ const atMeListenersPairArray: [UserPair, TextChannel, Boolean][] = [];
 
 @Discord()
 @SlashGroup({
-  description: "notifies you when someone joins a vc",
+  description: "Notifies you when someone joins a vc",
   name: "atme",
 })
 export class AtMe {

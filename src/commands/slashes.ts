@@ -11,7 +11,7 @@ export class SlashExample {
     name: "all-commands",
   })
   async pages(interaction: CommandInteraction): Promise<void> {
-    const commands = MetadataStorage.instance.applicationCommands.map((cmd) => {
+    const commands = MetadataStorage.instance.applicationCommandSlashes.map((cmd) => {
       return { description: cmd.description, name: cmd.name };
     });
 

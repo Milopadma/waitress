@@ -7,7 +7,7 @@ import { Discord, MetadataStorage, Slash } from "discordx";
 export class SlashExample {
   // example: pagination for all slash command
   @Slash({
-    description: "Pagination for all slash command",
+    description: "Pagination for all slash commands",
     name: "all-commands",
   })
   async pages(interaction: CommandInteraction): Promise<void> {

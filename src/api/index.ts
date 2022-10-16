@@ -6,17 +6,10 @@ import type { Context } from "koa";
 
 import { bot } from "../main.js";
 
-//prisma lib import
-import { prisma } from "../libs/prisma";
-
 @Router()
 export class API {
   @Get("/")
   index(context: Context): void {
-    //prisma get
-    const guilds = prisma.guildsArray.findMany();
-    context.body = guilds;
-    console.log(guilds);
   }
 
   @Get()

@@ -8,10 +8,26 @@ import {
 import { Discord, On, Slash, SlashGroup, SlashOption } from "discordx";
 import type { User } from "discord.js";
 
+//import prisma
+import { prisma } from "../lib/prisma.js";
+
 //define user pair, text channel and boolean
 type UserPair = [User, User]; // [notifier, notified]
 type TextChannel = TextBasedChannel | null;
 type Boolean = boolean;
+
+//fetch method
+const fetchFromDB = async (user: User): Promise<UserPair> => {
+  const userPair = await prisma.userPair.findUnique({
+    where: {
+      userId: user.id,
+    },
+  });
+  if (!userPair) {
+    return [user, user];
+  }
+  return [user, userPair.notified];
+};
 
 //define array
 const atMeListenersPairArray: [UserPair, TextChannel, Boolean][] = [];

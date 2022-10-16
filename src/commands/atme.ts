@@ -7,7 +7,8 @@ import {
 } from "discord.js";
 import { Bot, Discord, On, Slash, SlashGroup, SlashOption } from "discordx";
 import type { User } from "discord.js";
-import { bot } from "../main.js";
+import { guildData, bot } from "../main.js";
+
 import { prisma } from "../lib/prisma.js";
 
 // define user pair, text channel and boolean
@@ -16,23 +17,8 @@ type TextChannel = TextBasedChannel | null;
 type Boolean = boolean;
 
 // define array
-// let atMeListenersPairArray: [UserPair, TextChannel, Boolean][] = [];
-let atMeListenersPairArray: [] = [];
-
-// fetch method
-const fetchFromDB = async (guildId: number): Promise<[]> => {
-  const guild = await prisma.guildData.findUnique({
-    where: {
-      guildId: guildId,
-    },
-  });
-
-  if (guild) {
-    return guild.userPairArrayList;
-  } else {
-    return [];
-  }
-};
+let atMeListenersPairArray: [UserPair, TextChannel, Boolean][] = [];
+// let atMeListenersPairArray: [] = [];
 
 @Discord()
 @Bot()
@@ -45,8 +31,16 @@ export class AtMe {
   async onReady(): Promise<void> {
     // need to find the guild id from bots instance cache to find the guild data from the database
     const guildidstr = bot.guilds.cache.first()?.id;
+    if (guildidstr) {
+      const guildid = parseInt(guildidstr);
+      const data = await prisma.guildData.findUnique({
+        where: {
+          guildId: guildid,
+        },
+      });
+      console.log(data);
+    }
     const guildid = Number(guildidstr);
-    atMeListenersPairArray = await fetchFromDB(guildid);
   }
 
   @On({ event: "voiceStateUpdate" })

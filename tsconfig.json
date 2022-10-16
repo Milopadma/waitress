@@ -1,18 +1,41 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "es5",
     "module": "ESNext",
     "outDir": "build",
     "rootDir": "src",
     "strict": true,
     "moduleResolution": "Node",
     "allowSyntheticDefaultImports": true,
-
+    "isolatedModules": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-
+    "esModuleInterop": true,
     "skipLibCheck": false,
+    "incremental": true,
     "forceConsistentCasingInFileNames": true
   },
   "exclude": ["build", "node_modules"]
 }
+
+
+// {
+//   "compilerOptions": {
+//     "target": "es5",
+//     "lib": ["dom", "dom.iterable", "esnext"],
+//     "allowJs": true,
+//     "skipLibCheck": true,
+//     "strict": true,
+//     "forceConsistentCasingInFileNames": true,
+//     "noEmit": true,
+//     "esModuleInterop": true,
+//     "module": "esnext",
+//     "moduleResolution": "node",
+//     "resolveJsonModule": true,
+//     "isolatedModules": true,
+//     "jsx": "preserve",
+//     "incremental": true,
+//     "noUncheckedIndexedAccess": true
+//   },
+//   "exclude": ["build", "node_modules"]
+// }

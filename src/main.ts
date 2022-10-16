@@ -4,6 +4,11 @@ import type { Interaction, Message } from "discord.js";
 import { IntentsBitField } from "discord.js";
 import { Client } from "discordx";
 
+//prisma's shenanigans
+import type { GuildData } from "@prisma/client";
+
+export let guildData: GuildData | null;
+
 export const bot = new Client({
   // To use only guild command
   // botGuilds: [(client) => client.guilds.cache.map((guild) => guild.id)],
@@ -28,7 +33,14 @@ export const bot = new Client({
 
 bot.once("ready", async () => {
   // Make sure all guilds are cached
-  // await bot.guilds.fetch();
+  await bot.guilds.fetch();
+
+  // fetch guildData using the guildID from the database
+  // guildData = await prisma.guildData.findUnique({
+    // where: {
+      // guildId: Number(bot.guilds.cache.first()?.id),
+    // },
+  // });
 
   // Synchronize applications commands with Discord
   await bot.initApplicationCommands();

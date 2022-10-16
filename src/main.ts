@@ -6,6 +6,7 @@ import { Client } from "discordx";
 
 //prisma's shenanigans
 import type { GuildData } from "@prisma/client";
+import { prisma } from "./lib/prisma.js";
 
 export let guildData: GuildData | null;
 
@@ -36,12 +37,12 @@ bot.once("ready", async () => {
   await bot.guilds.fetch();
 
   // fetch guildData using the guildID from the database
-  // guildData = await prisma.guildData.findUnique({
-    // where: {
-      // guildId: Number(bot.guilds.cache.first()?.id),
-    // },
-  // });
-
+  guildData = await prisma.guildData.findUnique({
+    where: {
+      guildId: Number(bot.guilds.cache.first()?.id),
+    },
+  });
+  console.log(guildData);
   // Synchronize applications commands with Discord
   await bot.initApplicationCommands();
 

@@ -2,23 +2,38 @@ import {
   ApplicationCommandOptionType,
   CommandInteraction,
   GuildMember,
-  TextBasedChannel,
+  // TextBasedChannel,
   VoiceState,
 } from "discord.js";
 import { Bot, Discord, On, Slash, SlashGroup, SlashOption } from "discordx";
-import type { User } from "discord.js";
+// import type { User } from "discord.js";
 import { guildData, bot } from "../main.js";
 
-import { prisma } from "../lib/prisma.js";
+
+
+// MIGRATING from local array to prisma-type orm db
+import { User, TextChannel } from "@prisma/client";
 
 // define user pair, text channel and boolean
 type UserPair = [User, User]; // [notifier, notified]
-type TextChannel = TextBasedChannel | null;
+// type TextChannel = TextBasedChannel | null;
 type Boolean = boolean;
 
 // define array
 let atMeListenersPairArray: [UserPair, TextChannel, Boolean][] = [];
 // let atMeListenersPairArray: [] = [];
+
+//every 24 hours, sync the array with the database
+setInterval(() => {
+  prisma?.guildData.update({
+    where: {
+      guildId: guildData?.guildId,
+    },
+    data: {
+      atMeListenersPairArray: atMeListenersPairArray,
+    },
+  });
+}, 1000 * 60 * 60 * 24);
 
 @Discord()
 @Bot()
@@ -29,19 +44,11 @@ let atMeListenersPairArray: [UserPair, TextChannel, Boolean][] = [];
 export class AtMe {
   @On({ event: "ready" })
   async onReady(): Promise<void> {
-    // need to find the guild id from bots instance cache to find the guild data from the database
-    const guildidstr = bot.guilds.cache.first()?.id;
-    if (guildidstr) {
-      const guildid = parseInt(guildidstr);
-      const data = await prisma.guildData.findUnique({
-        where: {
-          guildId: guildid,
-        },
-      });
-      console.log(data);
+    if (guildData) {
+      console.log(guildData.userPairArrayList);
     }
-    const guildid = Number(guildidstr);
   }
+  atMeListenersPairArray = guildData?.userPairArrayList;
 
   @On({ event: "voiceStateUpdate" })
   async onVoiceStateUpdate(states: VoiceState[]): Promise<void> {
@@ -137,6 +144,7 @@ export class AtMe {
         textChannel,
         condition,
       ]);
+
       await interaction.reply(
         `You will now be notified ${condition ? "continously" : "once"} when ${
           notifiedUser.username

@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//trunk
+model GuildsArray {
+  id        Int         @id @default(autoincrement())
+  guilds    GuildData[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+//branch level 1
+model GuildData {
+  guildId                Int                      @id @default(autoincrement())
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  atMeListenersPairArray atMeListenersPairArray[]
+
+  GuildsArray              GuildsArray? @relation(fields: [guildsArrayId], references: [id])
+  guildsArrayId            Int?
+  atMeListenersPairArrayId Int
+}
+
+//branch level 2
+model atMeListenersPairArray {
+  id            Int           @id @default(autoincrement())
+  UserPair      UserPair[]
+  TextChannel   TextChannel[]
+  Condition     Boolean
+  userPairId    Int
+  textChannelId Int
+
+  GuildData        GuildData? @relation(fields: [guildDataGuildId], references: [guildId])
+  guildDataGuildId Int
+}
+
+//branch level 3
+model UserPair {
+  id                       Int                     @id @default(autoincrement())
+  users                    User[]
+  atMeListenersPairArray   atMeListenersPairArray? @relation(fields: [atMeListenersPairArrayId], references: [id])
+  atMeListenersPairArrayId Int
+}
+
+//leaves
+model User {
+  id         Int       @id @default(autoincrement())
+  userId     String
+  //relations
+  UserPair   UserPair? @relation(fields: [userPairId], references: [id])
+  userPairId Int?
+}
+
+//leaves
+model TextChannel {
+  id                       Int                     @id @default(autoincrement())
+  channelId                String
+  //relations
+  atMeListenersPairArray   atMeListenersPairArray? @relation(fields: [atMeListenersPairArrayId], references: [id])
+  atMeListenersPairArrayId Int
+}

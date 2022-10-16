@@ -1,7 +1,6 @@
 import {
   ApplicationCommandOptionType,
   CommandInteraction,
-  GuildBasedChannel,
   GuildMember,
   TextBasedChannel,
   VoiceState,
@@ -165,70 +164,3 @@ export class AtMe {
     }
   }
 }
-
-//
-//event listeners methods
-//check whenever a user joins a vc, then check if the user is a notifiedUser in the array
-
-//     if (isUserPairExist) {
-//       //if it is, remove it
-//       atMeListenersPair.splice(atMeListenersPair.indexOf(userPair), 1);
-//       console.log("CLG + Removed a pair, array currently is: " + atMeListenersPair);
-
-//       //reply for confirmation
-//       await notified.channel.send(
-//       `You will no longer be notified when they join a voice channel`
-//       );
-
-//       //remove the listener
-//       GuildMember.user!.client.removeAllListeners("voiceStateUpdate");
-//     } else {
-//       //if it isn't, add it,
-//       atMeListenersPair.push([interaction.user, GuildMember.user, condition]);
-//       console.log("CLG + New pair" + atMeListenersPair);
-//       //and add a listener for when the user joins the vc
-//       //check if the user wants to be notified continously or once-only
-//       if (condition === true) {
-//         //if they want to be notified continously, add a listener for when the user joins the vc
-//         const EventListener = GuildMember.user!.client.on(
-//           "voiceStateUpdate",
-//           (oldState, newState) => {
-//             if (
-//               oldState.channel === null &&
-//               newState.channel !== null &&
-//               newState.member!.id === GuildMember.user!.id
-//             ) {
-//               //if they did, send a message to the channel to ping the user
-//               interaction.channel!.send(
-//                 `Hey ${interaction.user}, ${GuildMember.user.username} just joined ${newState.channel}!`
-//               );
-//             }
-//           }
-//         );
-//       } else {
-//         //if they want to be notified once-only, add a listener for when the user joins the vc
-//         GuildMember.user!.client.once(
-//           "voiceStateUpdate",
-//           (oldState, newState) => {
-//             if (
-//               oldState.channel === null &&
-//               newState.channel !== null &&
-//               newState.member!.id === GuildMember.user!.id
-//             ) {
-//               //if they did, ping the user
-//               interaction.channel!.send(
-//                 `Hey ${interaction.user}, ${GuildMember.user.username} just joined ${newState.channel}!`
-//               );
-//             }
-//           }
-//         );
-//       }
-
-//       //reply for confirmation
-//       await interaction.reply(
-//         `Now notifying you whenever ${
-//           user!.username
-//         } joins a voice channel, with '${condition}' to continous notifications.`
-//       );
-//     }
-//   }

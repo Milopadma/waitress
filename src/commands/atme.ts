@@ -5,39 +5,50 @@ import {
   TextBasedChannel,
   VoiceState,
 } from "discord.js";
-import { Discord, On, Slash, SlashGroup, SlashOption } from "discordx";
+import { Bot, Discord, On, Slash, SlashGroup, SlashOption } from "discordx";
 import type { User } from "discord.js";
-
-//import prisma
+import { bot } from "../main.js";
 import { prisma } from "../lib/prisma.js";
 
-//define user pair, text channel and boolean
+// define user pair, text channel and boolean
 type UserPair = [User, User]; // [notifier, notified]
 type TextChannel = TextBasedChannel | null;
 type Boolean = boolean;
 
-//fetch method
-const fetchFromDB = async (user: User): Promise<UserPair> => {
-  const userPair = await prisma.userPair.findUnique({
+// define array
+// let atMeListenersPairArray: [UserPair, TextChannel, Boolean][] = [];
+let atMeListenersPairArray: [] = [];
+
+// fetch method
+const fetchFromDB = async (guildId: number): Promise<[]> => {
+  const guild = await prisma.guildData.findUnique({
     where: {
-      userId: user.id,
+      guildId: guildId,
     },
   });
-  if (!userPair) {
-    return [user, user];
+
+  if (guild) {
+    return guild.userPairArrayList;
+  } else {
+    return [];
   }
-  return [user, userPair.notified];
 };
 
-//define array
-const atMeListenersPairArray: [UserPair, TextChannel, Boolean][] = [];
-
 @Discord()
+@Bot()
 @SlashGroup({
   description: "Notifies you when someone joins a vc",
   name: "atme",
 })
 export class AtMe {
+  @On({ event: "ready" })
+  async onReady(): Promise<void> {
+    // need to find the guild id from bots instance cache to find the guild data from the database
+    const guildidstr = bot.guilds.cache.first()?.id;
+    const guildid = Number(guildidstr);
+    atMeListenersPairArray = await fetchFromDB(guildid);
+  }
+
   @On({ event: "voiceStateUpdate" })
   async onVoiceStateUpdate(states: VoiceState[]): Promise<void> {
     const newStateChannelID = states[1].channelId;

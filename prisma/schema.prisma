@@ -22,24 +22,19 @@ model GuildsArray {
 model GuildData {
   guildId           Int                      @id @default(autoincrement())
   createdAt         DateTime                 @default(now())
-  updatedAt         DateTime                 @updatedAt
   userPairArrayList atMeListenersPairArray[]
-
-  GuildsArray              GuildsArray? @relation(fields: [guildsArrayId], references: [id])
-  guildsArrayId            Int?
-  atMeListenersPairArrayId Int
+  updatedAt         DateTime                 @updatedAt
+  GuildsArray       GuildsArray?             @relation(fields: [guildsArrayId], references: [id])
+  guildsArrayId     Int?
 }
 
 //branch level 2
 model atMeListenersPairArray {
-  id            Int           @id @default(autoincrement())
-  UserPair      UserPair[]
-  TextChannel   TextChannel[]
-  Condition     Boolean
-  userPairId    Int
-  textChannelId Int
-
-  GuildData        GuildData? @relation(fields: [guildDataGuildId], references: [guildId])
+  id               Int           @id @default(autoincrement())
+  UserPair         UserPair[]
+  TextChannel      TextChannel[]
+  Condition        Boolean
+  GuildData        GuildData?    @relation(fields: [guildDataGuildId], references: [guildId])
   guildDataGuildId Int
 }
 

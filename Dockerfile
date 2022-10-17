@@ -10,6 +10,9 @@ COPY package.json .
 # Install dependencies
 RUN npm install
 
+# generated prisma files
+COPY prisma ./prisma/
+
 # prisma post install 
 RUN npx prisma generate
 

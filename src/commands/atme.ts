@@ -18,9 +18,8 @@ import {
 } from "discordx";
 
 // MIGRATING from local array to prisma-type orm db
-import { atMeListenersPairArray } from "@prisma/client";
 import fetch from "node-fetch";
-let atMeListenersPairArray: atMeListenersPairArray[] = [];
+let atMeListenersPairArray: any[] = [];
 
 let thisGuildID: string | null;
 

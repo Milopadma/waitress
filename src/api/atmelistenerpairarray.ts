@@ -6,10 +6,8 @@ import { prisma } from "../lib/prisma.js";
 // import { bot, thisGuildID } from "../main.js";
 import { bot } from "../main.js";
 //tell ts to ignore this line
-// @ts-ignore
-import { atMeListenersPairArray } from "@prisma/client"; 
 
-let atMeListenersPairArray: atMeListenersPairArray[] = [];
+let atMeListenersPairArray: any[] = [];
 
 @Router()
 export class API {

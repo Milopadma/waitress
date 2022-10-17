@@ -23,7 +23,7 @@ COPY tsconfig.json   .
 # Build project
 RUN npm run build
 
-## producation runner
+## production runner
 FROM node:lts-alpine as prod-runner
 
 # Set work directory
@@ -35,11 +35,16 @@ COPY --from=build-runner /tmp/app/package.json /app/package.json
 # Install dependencies
 RUN npm install --only=production
 
+# prisma post install 
+RUN npx prisma generate
+
 # expose the port 
 EXPOSE 3300
 
 # Move build files
 COPY --from=build-runner /tmp/app/build /app/build
+COPY --from=build-runner /tmp/app/build/prisma /app/build/prisma
+
 
 # Start bot
 CMD [ "npm", "run", "start" ]

@@ -47,7 +47,7 @@ export class AtMe {
         const notifiedName = states[1].guild.members.cache.get(notifiedID);
 
         if (userID === notifiedID) {
-          const textChannelID = atMeListenersPairArray[index].TextChannel;
+          const textChannelID = atMeListenersPairArray[index].textChannel;
           //use the textChannelID to send a message to the textbasedchannel
           const textChannel = states[1].guild.channels.cache.get(
             textChannelID
@@ -133,7 +133,7 @@ export class AtMe {
           body: JSON.stringify({
             notifier: notifierUser.id,
             notified: notifiedUser.id,
-            TextChannel: textChannel.id,
+            textChannel: textChannel.id,
             continuous: condition,
           }),
         });

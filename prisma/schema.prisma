@@ -35,7 +35,7 @@ model GuildData {
 model atMeListenersPairArray {
   id          Int     @id @default(autoincrement())
   uniqueId    Int     @unique
-  TextChannel String
+  textChannel String
   notifier    String
   notified    String
   continuous  Boolean

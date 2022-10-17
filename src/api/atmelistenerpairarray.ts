@@ -50,7 +50,7 @@ export class API {
           uniqueId: Math.floor(Math.random() * 100000) + 1,
           notifier: notifier as string,
           notified: notified as string,
-          TextChannel: textChannel as string,
+          textChannel: textChannel as string,
           continuous: continuous as boolean,
         },
       });

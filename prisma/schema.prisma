@@ -33,11 +33,12 @@ model GuildData {
 
 //branch level 2
 model atMeListenersPairArray {
-  id          Int    @id @default(autoincrement())
-  uniqueId    Int    @unique
+  id          Int     @id @default(autoincrement())
+  uniqueId    Int     @unique
   TextChannel String
   notifier    String
   notified    String
+  continuous  Boolean
 
   //relations
   GuildData   GuildData? @relation(fields: [guildDataId], references: [guildId])

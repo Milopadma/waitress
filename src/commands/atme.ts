@@ -2,6 +2,7 @@ import {
   ApplicationCommandOptionType,
   CommandInteraction,
   GuildMember,
+  TextBasedChannel,
   // TextBasedChannel,
   VoiceState,
 } from "discord.js";
@@ -9,6 +10,9 @@ import { Bot, Discord, On, Slash, SlashGroup, SlashOption } from "discordx";
 
 // MIGRATING from local array to prisma-type orm db
 import { atMeListenersPairArray } from "@prisma/client";
+
+import { prisma } from "../lib/prisma.js";
+import { thisGuildID } from "../main.js";
 
 let atMeListenersPairArray: atMeListenersPairArray[] = [];
 
@@ -19,6 +23,18 @@ let atMeListenersPairArray: atMeListenersPairArray[] = [];
   name: "atme",
 })
 export class AtMe {
+  @On({ event: "ready" })
+  async onReady(): Promise<void> {
+    atMeListenersPairArray = await prisma.atMeListenersPairArray.findMany({
+      where: {
+        GuildData: {
+          guildId: thisGuildID,
+        },
+      },
+    });
+    console.log(atMeListenersPairArray);
+  }
+
   @On({ event: "voiceStateUpdate" })
   async onVoiceStateUpdate(states: VoiceState[]): Promise<void> {
     const newStateChannelID = states[1].channelId;
@@ -33,19 +49,24 @@ export class AtMe {
     if (oldStateChannelID === null && newStateChannelID !== null) {
       //iterate through the array to find userID, using
       for (let index = 0; index < atMeListenersPairArray.length; index++) {
-        const notifier = atMeListenersPairArray[index].users[0];
-        const notifiedID = atMeListenersPairArray[index][0][1].id;
-        const notifiedName = atMeListenersPairArray[index][0][1].username;
+        const notifier = atMeListenersPairArray[index].notifier;
+        const notifiedID = atMeListenersPairArray[index].notified;
+        //turn the notifiedID to a notified name with discordjs
+        const notifiedName = states[1].guild.members.cache.get(notifiedID);
 
         if (userID === notifiedID) {
-          const textChannel = atMeListenersPairArray[index][1];
+          const textChannelID = atMeListenersPairArray[index].TextChannel;
+          //use the textChannelID to send a message to the textbasedchannel
+          const textChannel = states[1].guild.channels.cache.get(
+            textChannelID
+          ) as TextBasedChannel;
           if (textChannel) {
-            await textChannel.send(
-              `Hey <@${notifier}>, <${notifiedName}> joined ${voiceChannel}`
+            textChannel.send(
+              `Hey ${notifier}, ${notifiedName} has joined ${voiceChannel}`
             );
           }
           // if the condition is false, remove the user pair from the array
-          if (!atMeListenersPairArray[index][2]) {
+          if (!atMeListenersPairArray[index].continuous) {
             atMeListenersPairArray.splice(index, 1);
           }
         }
@@ -81,14 +102,16 @@ export class AtMe {
     //check if the user pair is already in the array
     const notifierUser = interaction.user; //the one that sent the command [1]
     const notifiedUser = GuildMember.user; //the one that was mentioned as a command parameter [2]
-    const userPairArray = this.atMeListenersPairArray.find(
-      (userPairArray) =>
-        userPairArray[0][0].id === notifierUser.id &&
-        userPairArray[0][1].id === notifiedUser.id
+
+    const userPairArray = atMeListenersPairArray.find(
+      (userPair) =>
+        userPair.notifier === notifierUser.id &&
+        userPair.notified === notifiedUser.id
     );
+
     if (userPairArray) {
       //if the user pair is already in the array
-      if (userPairArray[2] === condition) {
+      if (userPairArray.continuous === condition) {
         //if the condition is the same
         await interaction.reply(
           `You are already being notified ${
@@ -97,7 +120,7 @@ export class AtMe {
         );
       } else {
         //if the condition is different
-        userPairArray[2] = condition; //set the condition to the new one
+        userPairArray.continuous = condition; //set the condition to the new one
         await interaction.reply(
           `You are now being notified ${
             condition ? "continously" : "once"
@@ -108,11 +131,23 @@ export class AtMe {
       //if the user pair is not in the array
       //get the text channel where the command interaction happened
       const textChannel = interaction.channel;
-      atMeListenersPairArray.push([
-        [notifierUser, notifiedUser],
-        textChannel,
-        condition,
-      ]);
+      if (textChannel) {
+        //and then add the data to the db
+        await prisma.atMeListenersPairArray.create({
+          data: {
+            uniqueId: Math.floor(Math.random() * 100000) + 1,
+            notifier: notifierUser.id,
+            notified: notifiedUser.id,
+            continuous: condition,
+            TextChannel: textChannel.id,
+            GuildData: {
+              connect: {
+                guildId: thisGuildID,
+              },
+            },
+          },
+        });
+      }
 
       await interaction.reply(
         `You will now be notified ${condition ? "continously" : "once"} when ${
@@ -139,9 +174,9 @@ export class AtMe {
     const notifierUser = interaction.user; //the one that sent the command [1]
     const notifiedUser = GuildMember.user; //the one that was mentioned as a command parameter [2]
     const userPairArray = atMeListenersPairArray.find(
-      (userPairArray) =>
-        userPairArray[0][0].id === notifierUser.id &&
-        userPairArray[0][1].id === notifiedUser.id
+      (userPair) =>
+        userPair.notifier === notifierUser.id &&
+        userPair.notified === notifiedUser.id
     );
 
     if (userPairArray) {

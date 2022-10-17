@@ -4,6 +4,8 @@ import type { Interaction, Message } from "discord.js";
 import { IntentsBitField } from "discord.js";
 import { Client } from "discordx";
 
+export let thisGuildID: number;
+
 export const bot = new Client({
   // To use only guild command
   // botGuilds: [(client) => client.guilds.cache.map((guild) => guild.id)],
@@ -29,6 +31,10 @@ export const bot = new Client({
 bot.once("ready", async () => {
   // Make sure all guilds are cached
   await bot.guilds.fetch();
+
+  bot.guilds.cache.forEach((guild) => {
+    thisGuildID = Number(guild.id);
+  });
 
   // Synchronize applications commands with Discord
   await bot.initApplicationCommands();

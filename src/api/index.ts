@@ -17,8 +17,8 @@ export class API {
   }
 
   //get request from the prisma db
-  @Get()
-  async getAtMeListenersPairArray(context: Context): Promise<void> {
-    context.body = await prisma?.guildData.findMany();
-  }
+  // @Get()
+  // async getAtMeListenersPairArray(context: Context): Promise<void> {
+  // context.body = await prisma.guildData.findMany();
+  // }
 }

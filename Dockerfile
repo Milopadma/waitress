@@ -34,3 +34,6 @@ COPY --from=build-runner /tmp/app/build /app/build
 
 # Start bot
 CMD [ "npm", "run", "start" ]
+
+# prisma post install 
+RUN npx prisma generate

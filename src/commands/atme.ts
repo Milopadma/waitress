@@ -11,8 +11,9 @@ import { Bot, Discord, On, Slash, SlashGroup, SlashOption } from "discordx";
 // MIGRATING from local array to prisma-type orm db
 import { atMeListenersPairArray } from "@prisma/client";
 
-import { prisma } from "../lib/prisma.js";
 import { thisGuildID } from "../main.js";
+
+import { API } from "../api/index.js";
 
 let atMeListenersPairArray: atMeListenersPairArray[] = [];
 
@@ -25,14 +26,12 @@ let atMeListenersPairArray: atMeListenersPairArray[] = [];
 export class AtMe {
   @On({ event: "ready" })
   async onReady(): Promise<void> {
-    atMeListenersPairArray = await prisma.atMeListenersPairArray.findMany({
-      where: {
-        GuildData: {
-          guildId: thisGuildID,
-        },
-      },
-    });
-    console.log(atMeListenersPairArray);
+    //use the koa api to get the db data
+    const response = await fetch(
+      "http://localhost:3000/getAtMeListenersPairArray"
+    );
+
+    console.log(response);
   }
 
   @On({ event: "voiceStateUpdate" })
@@ -132,21 +131,7 @@ export class AtMe {
       //get the text channel where the command interaction happened
       const textChannel = interaction.channel;
       if (textChannel) {
-        //and then add the data to the db
-        await prisma.atMeListenersPairArray.create({
-          data: {
-            uniqueId: Math.floor(Math.random() * 100000) + 1,
-            notifier: notifierUser.id,
-            notified: notifiedUser.id,
-            continuous: condition,
-            TextChannel: textChannel.id,
-            GuildData: {
-              connect: {
-                guildId: thisGuildID,
-              },
-            },
-          },
-        });
+        //and then add the data to the db using the src/api
       }
 
       await interaction.reply(

@@ -33,8 +33,9 @@ bot.once("ready", async () => {
   // Make sure all guilds are cached
   await bot.guilds.fetch();
 
-  bot.guilds.cache.forEach((guild) => {
-    thisGuildID = Number(guild.id);
+  bot.guilds.cache.map((guild) => {
+    thisGuildID = +guild.id;
+    console.log(`Logged in to ${guild.id}!`);
   });
 
   // Synchronize applications commands with Discord

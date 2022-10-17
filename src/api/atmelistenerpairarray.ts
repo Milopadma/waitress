@@ -3,7 +3,8 @@ import { Get, Middleware, Post, Router } from "@discordx/koa";
 import koaBody from "koa-body";
 import type { Context } from "koa";
 import { prisma } from "../lib/prisma.js";
-import { bot, thisGuildID } from "../main.js";
+// import { bot, thisGuildID } from "../main.js";
+import { bot } from "../main.js";
 import { atMeListenersPairArray } from "@prisma/client";
 let atMeListenersPairArray: atMeListenersPairArray[] = [];
 
@@ -34,14 +35,14 @@ export class API {
   @Middleware(koaBody())
   async newAtMe(context: Context): Promise<void> {
     const request = context.request.body;
-    console.log("!!!FROM API request- " + thisGuildID);
+    // console.log("From API, Line 38 " + thisGuildID);
     if (request) {
       const notifier = request.notifier;
       const notified = request.notified;
       const textChannel = request.textChannel;
       //turn the request.continuous into a boolean
       const continuous = request.continuous === "true" ? false : true;
-
+      const thisGuildID = +request.guildId;
       const newAtMe = await prisma.atMeListenersPairArray.create({
         data: {
           uniqueId: Math.floor(Math.random() * 100000) + 1,

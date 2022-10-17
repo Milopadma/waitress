@@ -5,14 +5,24 @@ import {
   TextBasedChannel,
   // TextBasedChannel,
   VoiceState,
+  Message,
 } from "discord.js";
-import { Bot, Discord, On, Slash, SlashGroup, SlashOption } from "discordx";
+import {
+  Bot,
+  Discord,
+  On,
+  Once,
+  Slash,
+  SlashGroup,
+  SlashOption,
+} from "discordx";
 
 // MIGRATING from local array to prisma-type orm db
 import { atMeListenersPairArray } from "@prisma/client";
 import fetch from "node-fetch";
-import { thisGuildID } from "../main.js";
 let atMeListenersPairArray: atMeListenersPairArray[] = [];
+
+let thisGuildID: string | null;
 
 @Discord()
 @Bot()
@@ -21,15 +31,6 @@ let atMeListenersPairArray: atMeListenersPairArray[] = [];
   name: "atme",
 })
 export class AtMe {
-  @On({ event: "ready" })
-  async onReady(): Promise<void> {
-    //get the atmelistenerspairarray by using guildID
-    setTimeout(async () => {
-      const response = await fetch(`http://localhost:3300/api/getByGuildID/${thisGuildID}`);
-      console.log(response);
-    }, 2500);
-  }
-
   @On({ event: "voiceStateUpdate" })
   async onVoiceStateUpdate(states: VoiceState[]): Promise<void> {
     const newStateChannelID = states[1].channelId;
@@ -124,6 +125,7 @@ export class AtMe {
       //if the user pair is not in the array
       //get the text channel where the command interaction happened
       const textChannel = interaction.channel;
+      thisGuildID = interaction.guildId;
       if (textChannel) {
         //and then add the data to the db using the src/api
         const response = await fetch(`http://localhost:3300/api/newAtMe`, {
@@ -136,9 +138,11 @@ export class AtMe {
             notified: notifiedUser.id,
             textChannel: textChannel.id,
             continuous: condition,
+            guildID: thisGuildID,
           }),
         });
         console.log(response);
+        console.log("This Guild ID FROM 150 = " + thisGuildID);
       }
       await interaction.reply(
         `You will now be notified ${condition ? "continuously" : "once"} when ${

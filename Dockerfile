@@ -43,7 +43,6 @@ EXPOSE 3300
 
 # Move build files
 COPY --from=build-runner /tmp/app/build /app/build
-COPY --from=build-runner /tmp/app/build/prisma /app/build/prisma
 
 
 # Start bot

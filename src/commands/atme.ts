@@ -23,10 +23,11 @@ let atMeListenersPairArray: atMeListenersPairArray[] = [];
 export class AtMe {
   @On({ event: "ready" })
   async onReady(): Promise<void> {
-    //calling the api to get the data from the db
-    const response = await fetch(
-      `http://localhost:3300/api/atMeListenersPairArray`
-    );
+    //get the atmelistenerspairarray by using guildID
+    setTimeout(async () => {
+      const response = await fetch(`http://localhost:3300/api/getByGuildID/${thisGuildID}`);
+      console.log(response);
+    }, 2500);
   }
 
   @On({ event: "voiceStateUpdate" })

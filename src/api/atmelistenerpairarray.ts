@@ -14,7 +14,7 @@ export class API {
     context.body = await prisma.atMeListenersPairArray.findMany();
   }
 
-  @Get("/api/getByGuildID")
+  @Get("/api/getByGuildID/:guildId")
   async getByGuildID(context: Context): Promise<void> {
     const guildId = context.params.guildId;
     const guild = bot.guilds.cache.get(guildId);
@@ -34,11 +34,8 @@ export class API {
   @Middleware(koaBody())
   async newAtMe(context: Context): Promise<void> {
     const request = context.request.body;
-    console.log("!!!FROM API request- " + request);
+    console.log("!!!FROM API request- " + thisGuildID);
     if (request) {
-      console.log(
-        "!!!FROM API textchannel- " + context.request.body.textChannel
-      );
       const notifier = request.notifier;
       const notified = request.notified;
       const textChannel = request.textChannel;

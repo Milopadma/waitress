@@ -139,7 +139,6 @@ export class AtMe {
         });
         console.log(response);
       }
-
       await interaction.reply(
         `You will now be notified ${condition ? "continuously" : "once"} when ${
           notifiedUser.username

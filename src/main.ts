@@ -1,5 +1,6 @@
 import { dirname, importx } from "@discordx/importer";
 import { Koa } from "@discordx/koa";
+import koaBody from "koa-body";
 import type { Interaction, Message } from "discord.js";
 import { IntentsBitField } from "discord.js";
 import { Client } from "discordx";
@@ -83,6 +84,12 @@ async function run() {
 
   // api: need to build the api server first
   await server.build();
+
+  //use bodyparser
+  server.use(koaBody());
+  server.use((ctx) => {
+    ctx.body = `Request Body: ${JSON.stringify(ctx.request.body)}`;
+  });
 
   // api: let's start the server now
   const port = process.env.PORT ?? 3300;

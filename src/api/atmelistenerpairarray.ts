@@ -3,7 +3,7 @@ import { Get, Middleware, Post, Router } from "@discordx/koa";
 import koaBody from "koa-body";
 import type { Context } from "koa";
 import { prisma } from "../lib/prisma.js";
-import { bot } from "../main.js";
+import { bot, thisGuildID } from "../main.js";
 import { atMeListenersPairArray } from "@prisma/client";
 let atMeListenersPairArray: atMeListenersPairArray[] = [];
 
@@ -52,8 +52,20 @@ export class API {
           notified: notified as string,
           textChannel: textChannel as string,
           continuous: continuous as boolean,
+          // guilddata
+          GuildData: {
+            connectOrCreate: {
+              where: {
+                guildId: thisGuildID,
+              },
+              create: {
+                guildId: thisGuildID,
+              },
+            },
+          },
         },
       });
+
       //
       context.response.status = 201;
       context.body = {

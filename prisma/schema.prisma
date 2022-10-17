@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//trunk
+model GuildsArray {
+  id        Int         @id @default(autoincrement())
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  //relations
+  guilds    GuildData[]
+}
+
+//branch level 1
+model GuildData {
+  guildId   Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  //relations
+  userPairArrayList atMeListenersPairArray[]
+  GuildsArray       GuildsArray?             @relation(fields: [guildsArrayId], references: [id])
+  guildsArrayId     Int?
+}
+
+//branch level 2
+model atMeListenersPairArray {
+  id          Int     @id @default(autoincrement())
+  uniqueId    Int     @unique
+  textChannel String
+  notifier    String
+  notified    String
+  continuous  Boolean
+
+  //relations
+  GuildData   GuildData? @relation(fields: [guildDataId], references: [guildId])
+  guildDataId Int?
+}

@@ -1,23 +1,31 @@
 import {
   ApplicationCommandOptionType,
   CommandInteraction,
-  GuildBasedChannel,
   GuildMember,
   TextBasedChannel,
+  // TextBasedChannel,
   VoiceState,
+  Message,
 } from "discord.js";
-import { Discord, On, Slash, SlashGroup, SlashOption } from "discordx";
-import type { User } from "discord.js";
+import {
+  Bot,
+  Discord,
+  On,
+  Once,
+  Slash,
+  SlashGroup,
+  SlashOption,
+} from "discordx";
 
-//define user pair, text channel and boolean
-type UserPair = [User, User]; // [notifier, notified]
-type TextChannel = TextBasedChannel | null;
-type Boolean = boolean;
+// MIGRATING from local array to prisma-type orm db
+import { atMeListenersPairArray } from "@prisma/client";
+import fetch from "node-fetch";
+let atMeListenersPairArray: atMeListenersPairArray[] = [];
 
-//define array
-const atMeListenersPairArray: [UserPair, TextChannel, Boolean][] = [];
+let thisGuildID: string | null;
 
 @Discord()
+@Bot()
 @SlashGroup({
   description: "Notifies you when someone joins a vc",
   name: "atme",
@@ -31,25 +39,28 @@ export class AtMe {
     const userID = states[1].id;
     const voiceChannel = states[1].channel;
 
-    console.log(states);
-
     //if oldStateChannelID is null and newStateChannelID is not null, then continue
     if (oldStateChannelID === null && newStateChannelID !== null) {
       //iterate through the array to find userID, using
       for (let index = 0; index < atMeListenersPairArray.length; index++) {
-        const notifier = atMeListenersPairArray[index][0][0].id;
-        const notifiedID = atMeListenersPairArray[index][0][1].id;
-        const notifiedName = atMeListenersPairArray[index][0][1].username;
+        const notifier = atMeListenersPairArray[index].notifier;
+        const notifiedID = atMeListenersPairArray[index].notified;
+        //turn the notifiedID to a notified name with discordjs
+        const notifiedName = states[1].guild.members.cache.get(notifiedID);
 
         if (userID === notifiedID) {
-          const textChannel = atMeListenersPairArray[index][1];
+          const textChannelID = atMeListenersPairArray[index].textChannel;
+          //use the textChannelID to send a message to the textbasedchannel
+          const textChannel = states[1].guild.channels.cache.get(
+            textChannelID
+          ) as TextBasedChannel;
           if (textChannel) {
-            await textChannel.send(
-              `Hey <@${notifier}>, <${notifiedName}> joined ${voiceChannel}`
+            textChannel.send(
+              `Hey ${notifier}, ${notifiedName} has joined ${voiceChannel}`
             );
           }
           // if the condition is false, remove the user pair from the array
-          if (!atMeListenersPairArray[index][2]) {
+          if (!atMeListenersPairArray[index].continuous) {
             atMeListenersPairArray.splice(index, 1);
           }
         }
@@ -85,14 +96,16 @@ export class AtMe {
     //check if the user pair is already in the array
     const notifierUser = interaction.user; //the one that sent the command [1]
     const notifiedUser = GuildMember.user; //the one that was mentioned as a command parameter [2]
+
     const userPairArray = atMeListenersPairArray.find(
-      (userPairArray) =>
-        userPairArray[0][0].id === notifierUser.id &&
-        userPairArray[0][1].id === notifiedUser.id
+      (userPair) =>
+        userPair.notifier === notifierUser.id &&
+        userPair.notified === notifiedUser.id
     );
+
     if (userPairArray) {
       //if the user pair is already in the array
-      if (userPairArray[2] === condition) {
+      if (userPairArray.continuous === condition) {
         //if the condition is the same
         await interaction.reply(
           `You are already being notified ${
@@ -101,7 +114,7 @@ export class AtMe {
         );
       } else {
         //if the condition is different
-        userPairArray[2] = condition; //set the condition to the new one
+        userPairArray.continuous = condition; //set the condition to the new one
         await interaction.reply(
           `You are now being notified ${
             condition ? "continously" : "once"
@@ -112,13 +125,27 @@ export class AtMe {
       //if the user pair is not in the array
       //get the text channel where the command interaction happened
       const textChannel = interaction.channel;
-      atMeListenersPairArray.push([
-        [notifierUser, notifiedUser],
-        textChannel,
-        condition,
-      ]);
+      thisGuildID = interaction.guildId;
+      if (textChannel) {
+        //and then add the data to the db using the src/api
+        const response = await fetch(`http://localhost:3300/api/newAtMe`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            notifier: notifierUser.id,
+            notified: notifiedUser.id,
+            textChannel: textChannel.id,
+            continuous: condition,
+            guildID: thisGuildID,
+          }),
+        });
+        console.log(response);
+        console.log("This Guild ID FROM 150 = " + thisGuildID);
+      }
       await interaction.reply(
-        `You will now be notified ${condition ? "continously" : "once"} when ${
+        `You will now be notified ${condition ? "continuously" : "once"} when ${
           notifiedUser.username
         } joins a voice channel`
       );
@@ -142,9 +169,9 @@ export class AtMe {
     const notifierUser = interaction.user; //the one that sent the command [1]
     const notifiedUser = GuildMember.user; //the one that was mentioned as a command parameter [2]
     const userPairArray = atMeListenersPairArray.find(
-      (userPairArray) =>
-        userPairArray[0][0].id === notifierUser.id &&
-        userPairArray[0][1].id === notifiedUser.id
+      (userPair) =>
+        userPair.notifier === notifierUser.id &&
+        userPair.notified === notifiedUser.id
     );
 
     if (userPairArray) {
@@ -165,70 +192,3 @@ export class AtMe {
     }
   }
 }
-
-//
-//event listeners methods
-//check whenever a user joins a vc, then check if the user is a notifiedUser in the array
-
-//     if (isUserPairExist) {
-//       //if it is, remove it
-//       atMeListenersPair.splice(atMeListenersPair.indexOf(userPair), 1);
-//       console.log("CLG + Removed a pair, array currently is: " + atMeListenersPair);
-
-//       //reply for confirmation
-//       await notified.channel.send(
-//       `You will no longer be notified when they join a voice channel`
-//       );
-
-//       //remove the listener
-//       GuildMember.user!.client.removeAllListeners("voiceStateUpdate");
-//     } else {
-//       //if it isn't, add it,
-//       atMeListenersPair.push([interaction.user, GuildMember.user, condition]);
-//       console.log("CLG + New pair" + atMeListenersPair);
-//       //and add a listener for when the user joins the vc
-//       //check if the user wants to be notified continously or once-only
-//       if (condition === true) {
-//         //if they want to be notified continously, add a listener for when the user joins the vc
-//         const EventListener = GuildMember.user!.client.on(
-//           "voiceStateUpdate",
-//           (oldState, newState) => {
-//             if (
-//               oldState.channel === null &&
-//               newState.channel !== null &&
-//               newState.member!.id === GuildMember.user!.id
-//             ) {
-//               //if they did, send a message to the channel to ping the user
-//               interaction.channel!.send(
-//                 `Hey ${interaction.user}, ${GuildMember.user.username} just joined ${newState.channel}!`
-//               );
-//             }
-//           }
-//         );
-//       } else {
-//         //if they want to be notified once-only, add a listener for when the user joins the vc
-//         GuildMember.user!.client.once(
-//           "voiceStateUpdate",
-//           (oldState, newState) => {
-//             if (
-//               oldState.channel === null &&
-//               newState.channel !== null &&
-//               newState.member!.id === GuildMember.user!.id
-//             ) {
-//               //if they did, ping the user
-//               interaction.channel!.send(
-//                 `Hey ${interaction.user}, ${GuildMember.user.username} just joined ${newState.channel}!`
-//               );
-//             }
-//           }
-//         );
-//       }
-
-//       //reply for confirmation
-//       await interaction.reply(
-//         `Now notifying you whenever ${
-//           user!.username
-//         } joins a voice channel, with '${condition}' to continous notifications.`
-//       );
-//     }
-//   }

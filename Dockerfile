@@ -10,6 +10,9 @@ COPY package.json .
 # Install dependencies
 RUN npm install
 
+# prisma post install 
+RUN npx prisma generate
+
 # Move source files
 COPY src ./src
 COPY tsconfig.json   .
@@ -29,8 +32,8 @@ COPY --from=build-runner /tmp/app/package.json /app/package.json
 # Install dependencies
 RUN npm install --only=production
 
-# prisma post install 
-RUN npx prisma generate
+# expose the port 
+EXPOSE 3300
 
 # Move build files
 COPY --from=build-runner /tmp/app/build /app/build

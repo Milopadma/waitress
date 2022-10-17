@@ -13,44 +13,33 @@ datasource db {
 //trunk
 model GuildsArray {
   id        Int         @id @default(autoincrement())
-  guilds    GuildData[]
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
+  //relations
+  guilds    GuildData[]
 }
 
 //branch level 1
 model GuildData {
-  guildId           Int                      @id @default(autoincrement())
-  createdAt         DateTime                 @default(now())
+  guildId   Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  //relations
   userPairArrayList atMeListenersPairArray[]
-  updatedAt         DateTime                 @updatedAt
   GuildsArray       GuildsArray?             @relation(fields: [guildsArrayId], references: [id])
   guildsArrayId     Int?
 }
 
 //branch level 2
 model atMeListenersPairArray {
-  id          Int          @id @default(autoincrement())
-  users       User[]
-  TextChannel TextChannel?
-  GuildData   GuildData?   @relation(fields: [guildDataId], references: [guildId])
+  id          Int    @id @default(autoincrement())
+  uniqueId    Int    @unique
+  TextChannel String
+  notifier    String
+  notified    String
+
+  //relations
+  GuildData   GuildData? @relation(fields: [guildDataId], references: [guildId])
   guildDataId Int?
-}
-
-//leaf
-model User {
-  id     Int    @id @default(autoincrement())
-  userId String
-
-  atMeListenersPairArray   atMeListenersPairArray? @relation(fields: [atMeListenersPairArrayId], references: [id])
-  atMeListenersPairArrayId Int?
-}
-
-//leaf
-model TextChannel {
-  id        Int    @id @default(autoincrement())
-  channelid String
-
-  atMeListenersPairArray   atMeListenersPairArray @relation(fields: [atMeListenersPairArrayId], references: [id])
-  atMeListenersPairArrayId Int                    @unique
 }

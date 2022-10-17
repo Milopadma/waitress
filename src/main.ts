@@ -4,19 +4,6 @@ import type { Interaction, Message } from "discord.js";
 import { IntentsBitField } from "discord.js";
 import { Client } from "discordx";
 
-//prisma's shenanigans
-import type {
-  TextChannel,
-  User,
-  UserPair,
-  atMeListenersPairArray,
-  GuildData,
-} from "@prisma/client";
-
-import { prisma } from "./lib/prisma.js";
-
-export let guildData: GuildData | null;
-
 export const bot = new Client({
   // To use only guild command
   // botGuilds: [(client) => client.guilds.cache.map((guild) => guild.id)],
@@ -42,27 +29,6 @@ export const bot = new Client({
 bot.once("ready", async () => {
   // Make sure all guilds are cached
   await bot.guilds.fetch();
-
-  // fetch guildData using the guildID from the database
-  guildData = await prisma.guildData.findUnique({
-    where: {
-      guildId: Number(bot.guilds.cache.first()?.id),
-    },
-  });
-  console.log(guildData);
-
-    // create a new guildData object in the database
-    guildData = await prisma.guildData.create({
-      data: {
-        guildId: Number(bot.guilds.cache.first()?.id),
-        userPairArrayList: [
-          {
-          
-          }],
-        }
-    );
-
-
 
   // Synchronize applications commands with Discord
   await bot.initApplicationCommands();

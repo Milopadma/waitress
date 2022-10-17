@@ -141,7 +141,7 @@ export class AtMe {
       }
 
       await interaction.reply(
-        `You will now be notified ${condition ? "continously" : "once"} when ${
+        `You will now be notified ${condition ? "continuously" : "once"} when ${
           notifiedUser.username
         } joins a voice channel`
       );

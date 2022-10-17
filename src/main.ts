@@ -12,6 +12,7 @@ import type {
   atMeListenersPairArray,
   GuildData,
 } from "@prisma/client";
+
 import { prisma } from "./lib/prisma.js";
 
 export let guildData: GuildData | null;
@@ -50,26 +51,18 @@ bot.once("ready", async () => {
   });
   console.log(guildData);
 
-  if (!guildData) {
-    const defaultatMeListenersPairArray: atMeListenersPairArray = [
-      //default atMeListenersPairArray
-      {
-        id: 1,
-        UserPair: [],
-        TextChannel: [],
-        Condition: true,
-        guildDataGuildId: 1,
-      },
-    ][0];
-
     // create a new guildData object in the database
     guildData = await prisma.guildData.create({
       data: {
         guildId: Number(bot.guilds.cache.first()?.id),
-        userPairArrayList: defaultatMeListenersPairArray,
-      },
-    });
-  }
+        userPairArrayList: [
+          {
+          
+          }],
+        }
+    );
+
+
 
   // Synchronize applications commands with Discord
   await bot.initApplicationCommands();

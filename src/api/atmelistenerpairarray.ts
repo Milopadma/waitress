@@ -5,7 +5,10 @@ import type { Context } from "koa";
 import { prisma } from "../lib/prisma.js";
 // import { bot, thisGuildID } from "../main.js";
 import { bot } from "../main.js";
-import { atMeListenersPairArray } from "@prisma/client";
+//tell ts to ignore this line
+// @ts-ignore
+import { atMeListenersPairArray } from "@prisma/client"; 
+
 let atMeListenersPairArray: atMeListenersPairArray[] = [];
 
 @Router()

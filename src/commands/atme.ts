@@ -10,11 +10,8 @@ import { Bot, Discord, On, Slash, SlashGroup, SlashOption } from "discordx";
 
 // MIGRATING from local array to prisma-type orm db
 import { atMeListenersPairArray } from "@prisma/client";
-
+import fetch from "node-fetch";
 import { thisGuildID } from "../main.js";
-
-import { API } from "../api/index.js";
-
 let atMeListenersPairArray: atMeListenersPairArray[] = [];
 
 @Discord()
@@ -26,12 +23,10 @@ let atMeListenersPairArray: atMeListenersPairArray[] = [];
 export class AtMe {
   @On({ event: "ready" })
   async onReady(): Promise<void> {
-    //use the koa api to get the db data
+    //calling the api to get the data from the db
     const response = await fetch(
-      "http://localhost:3000/getAtMeListenersPairArray"
+      `http://localhost:3300/api/atMeListenersPairArray`
     );
-
-    console.log(response);
   }
 
   @On({ event: "voiceStateUpdate" })
@@ -41,8 +36,6 @@ export class AtMe {
 
     const userID = states[1].id;
     const voiceChannel = states[1].channel;
-
-    console.log(states);
 
     //if oldStateChannelID is null and newStateChannelID is not null, then continue
     if (oldStateChannelID === null && newStateChannelID !== null) {
@@ -132,6 +125,19 @@ export class AtMe {
       const textChannel = interaction.channel;
       if (textChannel) {
         //and then add the data to the db using the src/api
+        const response = await fetch(`http://localhost:3300/api/newAtMe`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            notifier: notifierUser.id,
+            notified: notifiedUser.id,
+            TextChannel: textChannel.id,
+            continuous: condition,
+          }),
+        });
+        console.log(response);
       }
 
       await interaction.reply(

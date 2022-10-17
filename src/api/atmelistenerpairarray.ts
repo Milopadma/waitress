@@ -1,34 +1,35 @@
 //prisma api calls
-// Path: src/api/index.ts
-
 import { Get, Post, Router } from "@discordx/koa";
 import type { Context } from "koa";
-
 import { prisma } from "../lib/prisma.js";
-
 import { thisGuildID, bot } from "../main.js";
-
 import { atMeListenersPairArray } from "@prisma/client";
-
 let atMeListenersPairArray: atMeListenersPairArray[] = [];
 
 @Router()
 export class API {
-  @Get("/")
-  index(context: Context): void {}
-
-  @Get()
-  guilds(context: Context): void {
-    context.body = `${bot.guilds.cache.map((g) => `${g.id}: ${g.name}\n`)}`;
-  }
-
-  @Get("/getAtMeListenersPairArray")
+  @Get("/api/atMeListenersPairArray")
   async getAtMeListenersPairArray(context: Context): Promise<void> {
-    atMeListenersPairArray = await prisma.atMeListenersPairArray.findMany();
-    context.body = atMeListenersPairArray;
+    context.body = await prisma.atMeListenersPairArray.findMany();
   }
 
-  @Post("/newAtMe")
+  @Get("/api/:guildId")
+  async getAtMeListenersPairArrayByGuildId2(context: Context): Promise<void> {
+    const guildId = context.params.guildId;
+    const guild = bot.guilds.cache.get(guildId);
+    if (!guild) {
+      context.status = 404;
+      context.body = `Guild with id ${guildId} not found`;
+      return;
+    }
+    context.body = await prisma.atMeListenersPairArray.findMany({
+      where: {
+        GuildData: guildId,
+      },
+    });
+  }
+
+  @Post("/api/newAtMe")
   async newAtMe(context: Context): Promise<void> {
     const { notifier, notified, textChannel, condition } = context.request.ctx;
     const newAtMe = await prisma.atMeListenersPairArray.create({

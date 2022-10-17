@@ -30,20 +30,23 @@ model GuildData {
 
 //branch level 2
 model atMeListenersPairArray {
-  id               Int           @id @default(autoincrement())
-  UserPair         UserPair[]
-  TextChannel      TextChannel[]
+  id               Int         @id @default(autoincrement())
+  UserPair         UserPair    @relation(fields: [userPairId], references: [id])
+  TextChannel      TextChannel @relation(fields: [textChannelId], references: [id])
   Condition        Boolean
-  GuildData        GuildData?    @relation(fields: [guildDataGuildId], references: [guildId])
+  GuildData        GuildData?  @relation(fields: [guildDataGuildId], references: [guildId])
   guildDataGuildId Int
+  userPairId       Int
+  textChannelId    Int
 }
 
 //branch level 3
 model UserPair {
-  id                       Int                     @id @default(autoincrement())
-  users                    User[]
-  atMeListenersPairArray   atMeListenersPairArray? @relation(fields: [atMeListenersPairArrayId], references: [id])
+  id    Int    @id @default(autoincrement())
+  users User[] // a user pair always has two users
+
   atMeListenersPairArrayId Int
+  atMeListenersPairArray   atMeListenersPairArray[]
 }
 
 //leaves
@@ -57,9 +60,9 @@ model User {
 
 //leaves
 model TextChannel {
-  id                       Int                     @id @default(autoincrement())
+  id                       Int                      @id @default(autoincrement())
   channelId                String
   //relations
-  atMeListenersPairArray   atMeListenersPairArray? @relation(fields: [atMeListenersPairArrayId], references: [id])
   atMeListenersPairArrayId Int
+  atMeListenersPairArray   atMeListenersPairArray[]
 }

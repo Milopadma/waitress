@@ -9,11 +9,16 @@ import { bot } from "../main.js";
 @Router()
 export class API {
   @Get("/")
-  index(context: Context): void {
-  }
+  index(context: Context): void {}
 
   @Get()
   guilds(context: Context): void {
     context.body = `${bot.guilds.cache.map((g) => `${g.id}: ${g.name}\n`)}`;
+  }
+
+  //get request from the prisma db
+  @Get()
+  async getAtMeListenersPairArray(context: Context): Promise<void> {
+    context.body = await prisma?.guildData.findMany();
   }
 }

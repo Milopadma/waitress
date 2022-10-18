@@ -25,10 +25,13 @@ export class Timer {
   ): Promise<void> {
     //reply for confirmation
     await interaction.reply(`Timer set for ${seconds} seconds`);
-
-    //timer finishes, ping the user
-    setTimeout(() => {
-      interaction.followUp(`Timer done! ${user}`);
-    }, seconds * 1000);
+    //get the text channel of the interaction
+    const channel = interaction.channel;
+    if (channel) {
+      //timer finishes, ping the user
+      setTimeout(() => {
+        channel.send(`Timer done! ${user}`);
+      }, seconds * 1000);
+    }
   }
 }

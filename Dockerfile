@@ -1,4 +1,4 @@
-## build runner
+##* build-runner
 FROM node:lts-alpine as build-runner
 
 # Set temp directory
@@ -12,12 +12,12 @@ RUN npm install
 
 # Move source files
 COPY src ./src
-COPY prisma ./prisma
 COPY tsconfig.json   .
 
 # Build project
 RUN npm run build
 
+##* prod-runner
 ## production runner
 FROM node:lts-alpine as prod-runner
 
@@ -27,9 +27,6 @@ WORKDIR /app
 # Copy package.json from build-runner
 COPY --from=build-runner /tmp/app/package.json /app/package.json
 
-# Move Prisma files
-COPY --from=build-runner /tmp/app/prisma /app/prisma
-
 # Install dependencies
 RUN npm install --only=production
 
@@ -38,7 +35,6 @@ EXPOSE 3300
 
 # Move build files
 COPY --from=build-runner /tmp/app/build /app/build
-
 
 # Start bot
 CMD [ "npm", "run", "start" ]

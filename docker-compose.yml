@@ -2,6 +2,7 @@ version: "3"
 services:
   app:
     build: .
+    ports: 3300:3300
     command: node build/main.js
     environment:
       - BOT_TOKEN=${BOT_TOKEN}

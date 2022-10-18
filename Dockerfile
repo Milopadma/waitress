@@ -9,6 +9,7 @@ COPY package.json .
 
 # Install dependencies
 RUN npm install
+RUN npx prisma generate 
 
 # Move source files
 COPY src ./src

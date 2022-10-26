@@ -32,6 +32,33 @@ export class API {
     });
   }
 
+  //to remove an atMe
+  @Post("/api/removeAtMe")
+  @Middleware(koaBody())
+  async removeAtMe(context: Context): Promise<void> {
+    const { guildID, notifier, notified } = context.request.body;
+    // const guild = bot.guilds.cache.get(guildID);
+    // if (!guild) {
+    //   context.status = 404;
+    //   context.body = `Guild with id ${guildID} not found`;
+    //   return;
+    // }
+    //prisma call to delete the db entry
+    await prisma.atMeListenersPairArray.deleteMany({
+      where: {
+        // GuildData: guildID,
+        notifier: notifier,
+        notified: notified,
+      },
+    });
+    //remove the atMe from the array
+    atMeListenersPairArray = atMeListenersPairArray.filter(
+      (atMe) => atMe.notifier !== notifier && atMe.notified !== notified
+    );
+    //return the new array
+    context.body = atMeListenersPairArray;
+  }
+
   @Post("/api/newAtMe")
   @Middleware(koaBody())
   async newAtMe(context: Context): Promise<void> {
@@ -43,7 +70,8 @@ export class API {
       const textChannel = request.textChannel;
       //turn the request.continuous into a boolean
       const continuous = request.continuous === "true" ? false : true;
-      const thisGuildID = +request.guildId;
+      const thisGuildID: number = request.guildID;
+      console.log(request);
       const newAtMe = await prisma.atMeListenersPairArray.create({
         data: {
           uniqueId: Math.floor(Math.random() * 100000) + 1,

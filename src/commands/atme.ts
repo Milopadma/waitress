@@ -70,7 +70,10 @@ export class AtMe {
       return;
     }
   }
-
+  ////////////////////////////////////////////////////////////////////////*
+  //                                                                     /
+  //                                                                     //
+  ////////////////////////////////////////////////////////////////////////*
   @Slash({ description: "add a listener" })
   @SlashGroup("atme")
   async add(
@@ -96,6 +99,40 @@ export class AtMe {
     //check if the user pair is already in the array
     const notifierUser = interaction.user; //the one that sent the command [1]
     const notifiedUser = GuildMember.user; //the one that was mentioned as a command parameter [2]
+
+    //fetch the array from the db first, then check if the user pair is already in the array,
+    //then add it to the array, then update the db
+    const response = await fetch(
+      "http://localhost:3300/api/atMeListenersPairArray",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const here_atMeListenersPairArray =
+      (await response.json()) as atMeListenersPairArray[];
+    const here_userPairArray = here_atMeListenersPairArray.find(
+      (userPair) =>
+        userPair.notifier === notifierUser.id &&
+        userPair.notified === notifiedUser.id
+    );
+    if (here_userPairArray) {
+      interaction.reply(
+        `You are already listening to ${notifiedUser.username}`
+      );
+      return;
+    }
+    //if it isn't, add it
+    const userPair = {
+      notifier: notifierUser.id,
+      notified: notifiedUser.id,
+      continuous: condition,
+      textChannel: interaction.channelId,
+    };
+    //add the user pair to the array
+    atMeListenersPairArray.push(userPair);
 
     const userPairArray = atMeListenersPairArray.find(
       (userPair) =>
@@ -157,6 +194,10 @@ export class AtMe {
       }
     }
   }
+  ////////////////////////////////////////////////////////////////////////*
+  //                                                                     /
+  //                                                                     //
+  ////////////////////////////////////////////////////////////////////////*
   @Slash({ description: "remove a listener" })
   @SlashGroup("atme")
   async remove(
@@ -197,7 +238,10 @@ export class AtMe {
       );
     }
   }
-
+  ////////////////////////////////////////////////////////////////////////*
+  //                                                                     /
+  //                                                                     //
+  ////////////////////////////////////////////////////////////////////////*
   @Slash({ description: "list all listeners" })
   @SlashGroup("atme")
   async list(interaction: CommandInteraction): Promise<void> {

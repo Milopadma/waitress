@@ -21,7 +21,7 @@ import {
 import fetch from "node-fetch";
 let atMeListenersPairArray: any[] = [];
 
-let thisGuildID: string | null;
+let thisGuildID: number | null;
 
 @Discord()
 @Bot()
@@ -124,7 +124,7 @@ export class AtMe {
       //if the user pair is not in the array
       //get the text channel where the command interaction happened
       const textChannel = interaction.channel;
-      thisGuildID = interaction.guildId;
+      thisGuildID = Number(interaction.guildId);
       if (textChannel) {
         //and then add the data to the db using the src/api
         const response = await fetch(`http://localhost:3300/api/newAtMe`, {
@@ -190,30 +190,38 @@ export class AtMe {
       );
     }
   }
-	
-	@Slash({ description: "list all listeners" })
-	@SlashGroup("atme")
-	async list(@SlashOption ({
-		name: "user",
-		description: "Who do you want to list the listeners for?",
-		required: true,
-		type: ApplicationCommandOptionType.User
-	})
-	GuildMember: GuildMember,
-	interaction: CommandInteraction
-	): Promise<void> {
-		const user = GuildMember.user;
-		const notifierUser = interaction.user;
-		const notifiedUser = GuildMember.user;
-		const userPairArray = atMeListenersPairArray.find(
-			(userPair) =>
-				userPair.notifier === notifierUser.id &&
-				userPair.notified === notifiedUser.id
-		);
-		if (userPairArray) {
-			await interaction.reply(`You are being notified whenever ${user!.username} joins a voice channel`);
-		} else {
-			await interaction.reply(`You are not being notified whenever ${user!.username} joins a voice channel`);
-		}
-	}
+
+  @Slash({ description: "list all listeners" })
+  @SlashGroup("atme")
+  async list(interaction: CommandInteraction): Promise<void> {
+    const notifierUser = interaction.user;
+    const userPairArray = atMeListenersPairArray.find(
+      (userPair) => userPair.notifier === notifierUser.id
+    );
+    if (userPairArray) {
+      for (let index = 0; index < userPairArray; index++) {
+        const element = userPairArray[index];
+        if (interaction.guild) {
+          const notifiedUser = interaction.guild.members.cache.get(
+            element.notified
+          );
+          await interaction.reply(
+            `You are being notified ${
+              element.continuous ? "continuously" : "once"
+            } when ${notifiedUser} joins a voice channel`
+          );
+        } else {
+          await interaction.reply(
+            `You are being notified ${
+              element.continuous ? "continuously" : "once"
+            } when ${element.notified} joins a voice channel`
+          );
+        }
+      }
+    } else {
+      await interaction.reply(
+        `You are not being notified whenever anyone joins.`
+      );
+    }
+  }
 }

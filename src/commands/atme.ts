@@ -1,3 +1,4 @@
+import { atMeListenersPairArray } from "@prisma/client";
 import {
   ApplicationCommandOptionType,
   CommandInteraction,
@@ -142,12 +143,18 @@ export class AtMe {
         });
         console.log(response);
         console.log("This Guild ID FROM 150 = " + thisGuildID);
+
+        if (response.status === 201) {
+          textChannel.send(
+            `You will now be notified ${
+              condition ? "continuously" : "once"
+            } when ${notifiedUser.username} joins a voice channel`
+          );
+        } else
+          await textChannel.send(
+            `There was an error adding ${notifiedUser.username} to the database`
+          );
       }
-      await interaction.reply(
-        `You will now be notified ${condition ? "continuously" : "once"} when ${
-          notifiedUser.username
-        } joins a voice channel`
-      );
     }
   }
   @Slash({ description: "remove a listener" })
@@ -194,34 +201,70 @@ export class AtMe {
   @Slash({ description: "list all listeners" })
   @SlashGroup("atme")
   async list(interaction: CommandInteraction): Promise<void> {
+    const response = await fetch(
+      "http://localhost:3300/api/atMeListenersPairArray",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const here_atMeListenersPairArray =
+      (await response.json()) as atMeListenersPairArray[];
+    //find in the here_atMeListenersPairArray the notifier that is the same as the user that sent the command
     const notifierUser = interaction.user;
-    const userPairArray = atMeListenersPairArray.find(
+    const textChannel = interaction.channel;
+    const notifierUserArray = here_atMeListenersPairArray.filter(
       (userPair) => userPair.notifier === notifierUser.id
     );
-    if (userPairArray) {
-      for (let index = 0; index < userPairArray; index++) {
-        const element = userPairArray[index];
-        if (interaction.guild) {
-          const notifiedUser = interaction.guild.members.cache.get(
-            element.notified
-          );
-          await interaction.reply(
-            `You are being notified ${
-              element.continuous ? "continuously" : "once"
-            } when ${notifiedUser} joins a voice channel`
-          );
-        } else {
-          await interaction.reply(
-            `You are being notified ${
-              element.continuous ? "continuously" : "once"
-            } when ${element.notified} joins a voice channel`
-          );
-        }
-      }
+
+    if (!textChannel) return;
+    //if the notifierUserArray is empty, reply with a message
+    if (notifierUserArray.length === 0) {
+      await textChannel.send(
+        "You are not notifying yourself for anyone joining a voice channel"
+      );
     } else {
-      await interaction.reply(
-        `You are not being notified whenever anyone joins.`
+      //if the notifierUserArray is not empty, reply with a message
+      await textChannel.send(
+        `You are notifying yourself for the following users joining a voice channel: ${notifierUserArray
+          .map((userPair) => `<@${userPair.notified}>`)
+          .join(", ")}`
       );
     }
   }
 }
+
+//   const notifierUser = interaction.user;
+//   const userPairArray = atMeListenersPairArray.find(
+//     (userPair) => userPair.notifier === notifierUser.id
+//   );
+//   if (userPairArray) {
+//     for (let index = 0; index < userPairArray; index++) {
+//       const element = userPairArray[index];
+//       if (interaction.guild) {
+//         const notifiedUser = interaction.guild.members.cache.get(
+//           element.notified
+//         );
+//         await interaction.reply(
+//           `You are being notified ${
+//             element.continuous ? "continuously" : "once"
+//           } when ${notifiedUser} joins a voice channel`
+//         );
+//       } else {
+//         await interaction.reply(
+//           `You are being notified ${
+//             element.continuous ? "continuously" : "once"
+//           } when ${element.notified} joins a voice channel`
+//         );
+//       }
+//     }
+//   } else {
+//     await interaction.reply(
+//       `You are not being notified whenever anyone joins.`
+//     );
+//   }
+//   }
+// }

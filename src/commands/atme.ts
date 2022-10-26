@@ -190,4 +190,30 @@ export class AtMe {
       );
     }
   }
+	
+	@Slash({ description: "list all listeners" })
+	@SlashGroup("atme")
+	async list(@SlashOption ({
+		name: "user",
+		description: "Who do you want to list the listeners for?",
+		required: true,
+		type: ApplicationCommandOptionType.User
+	})
+	GuildMember: GuildMember,
+	interaction: CommandInteraction
+	): Promise<void> {
+		const user = GuildMember.user;
+		const notifierUser = interaction.user;
+		const notifiedUser = GuildMember.user;
+		const userPairArray = atMeListenersPairArray.find(
+			(userPair) =>
+				userPair.notifier === notifierUser.id &&
+				userPair.notified === notifiedUser.id
+		);
+		if (userPairArray) {
+			await interaction.reply(`You are being notified whenever ${user!.username} joins a voice channel`);
+		} else {
+			await interaction.reply(`You are not being notified whenever ${user!.username} joins a voice channel`);
+		}
+	}
 }

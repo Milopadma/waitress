@@ -43,8 +43,8 @@ export class API {
       const textChannel = request.textChannel;
       //turn the request.continuous into a boolean
       const continuous = request.continuous === "true" ? false : true;
-      const thisGuildID: number = request.guildId;
-      console.log(thisGuildID);
+      const thisGuildID: number = request.guildID;
+      console.log(request);
       const newAtMe = await prisma.atMeListenersPairArray.create({
         data: {
           uniqueId: Math.floor(Math.random() * 100000) + 1,

@@ -133,67 +133,102 @@ export class AtMe {
     };
     //add the user pair to the array
     atMeListenersPairArray.push(userPair);
+    //if the user pair is not in the array
+    //get the text channel where the command interaction happened
+    const textChannel = interaction.channel;
+    thisGuildID = Number(interaction.guildId);
+    if (textChannel) {
+      //and then add the data to the db using the src/api
+      const response = await fetch(`http://localhost:3300/api/newAtMe`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          notifier: notifierUser.id,
+          notified: notifiedUser.id,
+          textChannel: textChannel.id,
+          continuous: condition,
+          guildID: thisGuildID,
+        }),
+      });
+      console.log(response);
+      console.log("This Guild ID FROM 150 = " + thisGuildID);
 
-    const userPairArray = atMeListenersPairArray.find(
-      (userPair) =>
-        userPair.notifier === notifierUser.id &&
-        userPair.notified === notifiedUser.id
-    );
-
-    if (userPairArray) {
-      //if the user pair is already in the array
-      if (userPairArray.continuous === condition) {
-        //if the condition is the same
-        await interaction.reply(
-          `You are already being notified ${
-            condition ? "continously" : "once"
+      if (response.status === 201) {
+        textChannel.send(
+          `You will now be notified ${
+            condition ? "continuously" : "once"
           } when ${notifiedUser.username} joins a voice channel`
         );
-      } else {
-        //if the condition is different
-        userPairArray.continuous = condition; //set the condition to the new one
-        await interaction.reply(
-          `You are now being notified ${
-            condition ? "continously" : "once"
-          } when ${notifiedUser.username} joins a voice channel`
+      } else
+        await textChannel.send(
+          `There was an error adding ${notifiedUser.username} to the database`
         );
-      }
-    } else {
-      //if the user pair is not in the array
-      //get the text channel where the command interaction happened
-      const textChannel = interaction.channel;
-      thisGuildID = Number(interaction.guildId);
-      if (textChannel) {
-        //and then add the data to the db using the src/api
-        const response = await fetch(`http://localhost:3300/api/newAtMe`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            notifier: notifierUser.id,
-            notified: notifiedUser.id,
-            textChannel: textChannel.id,
-            continuous: condition,
-            guildID: thisGuildID,
-          }),
-        });
-        console.log(response);
-        console.log("This Guild ID FROM 150 = " + thisGuildID);
-
-        if (response.status === 201) {
-          textChannel.send(
-            `You will now be notified ${
-              condition ? "continuously" : "once"
-            } when ${notifiedUser.username} joins a voice channel`
-          );
-        } else
-          await textChannel.send(
-            `There was an error adding ${notifiedUser.username} to the database`
-          );
-      }
     }
   }
+
+  // const userPairArray = atMeListenersPairArray.find(
+  //   (userPair) =>
+  //     userPair.notifier === notifierUser.id &&
+  //     userPair.notified === notifiedUser.id
+  // );
+  // // const textChannel = interaction.channel;
+  // if (!textChannel) return;
+  // if (userPairArray) {
+  //   //if the user pair is already in the array
+  //   if (userPairArray.continuous === condition) {
+  //     //if the condition is the same
+  //     await textChannel.send(
+  //       `You are already being notified ${
+  //         condition ? "continously" : "once"
+  //       } when ${notifiedUser.username} joins a voice channel`
+  //     );
+  //   } else {
+  //     //if the condition is different
+  //     userPairArray.continuous = condition; //set the condition to the new one
+  //     await textChannel.send(
+  //       `You are now being notified ${
+  //         condition ? "continously" : "once"
+  //       } when ${notifiedUser.username} joins a voice channel`
+  //     );
+  //   }
+  // } else {
+  //   //if the user pair is not in the array
+  //   //get the text channel where the command interaction happened
+  //   const textChannel = interaction.channel;
+  //   thisGuildID = Number(interaction.guildId);
+  //   if (textChannel) {
+  //     //and then add the data to the db using the src/api
+  //     const response = await fetch(`http://localhost:3300/api/newAtMe`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         notifier: notifierUser.id,
+  //         notified: notifiedUser.id,
+  //         textChannel: textChannel.id,
+  //         continuous: condition,
+  //         guildID: thisGuildID,
+  //       }),
+  //     });
+  //     console.log(response);
+  //     console.log("This Guild ID FROM 150 = " + thisGuildID);
+
+  //     if (response.status === 201) {
+  //       textChannel.send(
+  //         `You will now be notified ${
+  //           condition ? "continuously" : "once"
+  //         } when ${notifiedUser.username} joins a voice channel`
+  //       );
+  //     } else
+  //       await textChannel.send(
+  //         `There was an error adding ${notifiedUser.username} to the database`
+  //       );
+  //   }
+  // }
+  // }
   ////////////////////////////////////////////////////////////////////////*
   //                                                                     /
   //                                                                     //

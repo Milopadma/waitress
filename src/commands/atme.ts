@@ -211,32 +211,78 @@ export class AtMe {
     GuildMember: GuildMember,
     interaction: CommandInteraction
   ): Promise<void> {
-    const user = GuildMember.user;
-    //check if the user pair is already in the array
-    const notifierUser = interaction.user; //the one that sent the command [1]
-    const notifiedUser = GuildMember.user; //the one that was mentioned as a command parameter [2]
-    const userPairArray = atMeListenersPairArray.find(
+    //fetch from the db first, then check if the user pair is in the array,
+    //then remove it from the array, then update the db
+    const response = await fetch(
+      "http://localhost:3300/api/atMeListenersPairArray",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const here_atMeListenersPairArray =
+      (await response.json()) as atMeListenersPairArray[];
+    const here_userPairArray = here_atMeListenersPairArray.find(
       (userPair) =>
-        userPair.notifier === notifierUser.id &&
-        userPair.notified === notifiedUser.id
+        userPair.notifier === interaction.user.id &&
+        userPair.notified === GuildMember.user.id
+    );
+    if (!here_userPairArray) {
+      interaction.reply(
+        `You are not listening to ${GuildMember.user.username}`
+      );
+      return;
+    }
+    // if it is, remove it
+    const userPair = {
+      notifier: interaction.user.id,
+      notified: GuildMember.user.id,
+      continuous: here_userPairArray.continuous,
+      textChannel: interaction.channelId,
+    };
+    //remove the user pair from the array
+    atMeListenersPairArray.splice(atMeListenersPairArray.indexOf(userPair), 1);
+    // remove the user pair fromt the db
+    const response2 = await fetch(`http://localhost:3300/api/removeAtMe/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        notifier: interaction.user.id,
+        notified: GuildMember.user.id,
+        textChannel: interaction.channelId,
+        continuous: here_userPairArray.continuous,
+        guildID: thisGuildID,
+      }),
+    });
+    // const newHere_atmeListenersPairArray =
+    //   (await response2.json()) as atMeListenersPairArray;
+
+    // console.log(newHere_atmeListenersPairArray);
+    const textChannel = interaction.channel;
+    if (!textChannel) return;
+    await textChannel.send(
+      `No longer notifying you whenever ${userPair!.notified} joins.`
     );
 
-    if (userPairArray) {
-      //if it is, remove it
-      atMeListenersPairArray.splice(
-        atMeListenersPairArray.indexOf(userPairArray),
-        1
-      );
-      //reply for confirmation
-      await interaction.reply(
-        `No longer notifying you whenever ${user!.username} joins.`
-      );
-    } else {
-      //if it isn't, reply for confirmation
-      await interaction.reply(
-        `You're not notifying yourself whenever ${user!.username} joins.`
-      );
-    }
+    // const user = GuildMember.user;
+    // //check if the user pair is already in the array
+    // const notifierUser = interaction.user; //the one that sent the command [1]
+    // const notifiedUser = GuildMember.user; //the one that was mentioned as a command parameter [2]
+    // const userPairArray = atMeListenersPairArray.find(
+    //   (userPair) =>
+    //     userPair.notifier === notifierUser.id &&
+    //     userPair.notified === notifiedUser.id
+    // );
+    //if it is, remove it
+    // atMeListenersPairArray.splice(atMeListenersPairArray.indexOf(userPair), 1);
+    //reply for confirmation
+
+    //if it isn't, reply for confirmation
+    // `You're not notifying yourself whenever ${userPair!.notified} joins.`;
   }
   ////////////////////////////////////////////////////////////////////////*
   //                                                                     /

@@ -10,8 +10,7 @@
     "build:changelog": "npx @discordx/changelog --root=src",
     "dev": "ts-node-esm src/main.ts",
     "start": "node build/main.js",
-    "watch": "nodemon --exec ts-node-esm src/main.ts",
-    "postinstall": "prisma generate --schema=./src/prisma/schema.prisma"
+    "watch": "nodemon --exec ts-node-esm src/main.ts"
   },
   "dependencies": {
     "@discordx/importer": "^1.1.10",
